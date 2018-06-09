@@ -8,6 +8,10 @@ vk = vk_api.vk_api.VkApi(token=token)
 
 memory = {}
 
+def get_last_id():
+    data = vk.method('messages.get', {'count': 1})['items']
+    return data[0]['id']
+
 def main(id, text):
     global memory
     if text == 'Привет':
@@ -19,14 +23,16 @@ def main(id, text):
         link = text.split('/')[-1]
         if link in memory:
             for msg in memory[link]:
-                vk.method('messages.send', {'user_id': id, 'message': msg})
+                id_last = vk.method('messages.send', {'user_id': id, 'message': msg})
+            return id_last
         else:
             ex = Examer('arkadiy@p33.org', 'zabylkto01')
             ex.set_link(text)
             try:
                 ex.start()
             except ArithmeticError:
-                vk.method('messages.send', {'user_id': id, 'message': 'Invalid Link'})
+                id_last = vk.method('messages.send', {'user_id': id, 'message': 'Invalid Link'})
+                return id_last
             else:
                 ex.format_text()
                 list_ = []
