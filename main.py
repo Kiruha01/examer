@@ -15,10 +15,10 @@ def get_last_id():
 def main(id, text):
     global memory
     if text == 'Привет':
-        vk.method('messages.send', {'user_id': id, 'message': 'Кидай ссылку на тест и я решу его за тебя'})
+        return vk.method('messages.send', {'user_id': id, 'message': 'Кидай ссылку на тест и я решу его за тебя'})
     elif text == 'reset' and str(id) == '276820555':
         memory = {}
-        vk.method('messages.send', {'user_id': '276820555', 'message': 'ok'})
+        return vk.method('messages.send', {'user_id': '276820555', 'message': 'ok'})
     else:
         link = text.split('/')[-1]
         if link in memory:
@@ -39,7 +39,7 @@ def main(id, text):
                 for task_id in ex.list_of_task:
                     list_.append(task_id['question'] + '\nОтвет: ' + task_id['answer'])
                 memory[link] = list_
-                main(id, text)
+                return main(id, text)
     
 
 
