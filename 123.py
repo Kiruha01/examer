@@ -12,6 +12,7 @@ def hanr():
 
 @app.route('/', methods=['POST'])
 def handler():
+    global id_last
     data = json.loads(request.data)
     if data['type'] == 'confirmation':
         return 'bf65672b'
