@@ -18,28 +18,26 @@ def main(id, text):
         return vk.method('messages.send', {'user_id': id, 'message': 'Кидай ссылку на тест и я решу его за тебя'})
     elif text == 'reset' and str(id) == '276820555':
         memory = {}
-        return vk.method('messages.send', {'user_id': '276820555', 'message': 'ok'})
+        vk.method('messages.send', {'user_id': '276820555', 'message': 'ok'})
     else:
         link = text.split('/')[-1]
         if link in memory:
             for msg in memory[link]:
-                id_last = vk.method('messages.send', {'user_id': id, 'message': msg})
-            return id_last
+                vk.method('messages.send', {'user_id': id, 'message': msg})
         else:
             ex = Examer('arkadiy@p33.org', 'zabylkto01')
             ex.set_link(text)
             try:
                 ex.start()
             except ArithmeticError:
-                id_last = vk.method('messages.send', {'user_id': id, 'message': 'Invalid Link'})
-                return id_last
+                vk.method('messages.send', {'user_id': id, 'message': 'Invalid Link'})
             else:
                 ex.format_text()
                 list_ = []
                 for task_id in ex.list_of_task:
                     list_.append(task_id['question'] + '\nОтвет: ' + task_id['answer'])
                 memory[link] = list_
-                return main(id, text)
+                main(id, text)
     
 
 

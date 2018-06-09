@@ -16,12 +16,13 @@ def handler():
     data = json.loads(request.data)
     if data['type'] == 'confirmation':
         return 'bf65672b'
-    elif data['object']['id'] <= id_last:
+    elif data["type"] == "message_new" and data['object']['id'] <= id_last:
         return 'ok'
     elif data["type"] == "message_new":
         user_id = data['object']['user_id']
         text = data['object']['body']
-        id_last = main.main(user_id, text)
+        last_id = data['object']['id']
+        main.main(user_id, text)
         return 'ok'
 
 
