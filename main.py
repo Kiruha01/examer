@@ -14,6 +14,7 @@ def get_last_id():
     return data[0]['id']
 
 def main(id, text):
+    global ex
     global memory
     if text == 'Привет':
         return vk.method('messages.send', {'user_id': id, 'message': 'Кидай ссылку на тест и я решу его за тебя'})
