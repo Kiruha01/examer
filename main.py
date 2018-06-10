@@ -5,7 +5,7 @@ from examer import Examer
 
 vk = vk_api.vk_api.VkApi(token=token)
 
-ex = Examer()
+ex = Examer('arkadiy@p33.org', 'zabylkto01')
 
 memory = {}
 
