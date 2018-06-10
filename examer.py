@@ -27,6 +27,7 @@ class Examer(object):
         dict_of_task = {}
         tasks = self.person.get('https://teacher.examer.ru/api/v2/teacher/test/student/' + self.link)
         tasks = loads(tasks.text)
+        print(tasks)
         if 'error' in tasks:
             raise ArithmeticError
         self.theme = tasks['test']['title'] # Тема теста
