@@ -5,6 +5,7 @@ from examer import Examer
 
 vk = vk_api.vk_api.VkApi(token=token)
 
+ex = Examer('arkadiy@p33.org', 'zabylkto01')
 
 memory = {}
 
@@ -25,7 +26,7 @@ def main(id, text):
             for msg in memory[link]:
                 vk.method('messages.send', {'user_id': id, 'message': msg})
         else:
-            ex = Examer('arkadiy@p33.org', 'zabylkto01')
+            
             ex.set_link(text)
             try:
                 ex.start()
