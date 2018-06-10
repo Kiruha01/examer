@@ -5,7 +5,7 @@ from examer import Examer
 
 vk = vk_api.vk_api.VkApi(token=token)
 
-ex = Examer('arkadiy@p33.org', 'zabylkto01')
+ex = Examer()
 
 memory = {}
 
@@ -21,6 +21,9 @@ def main(id, text):
     elif text == 'reset' and str(id) == '276820555':
         memory = {}
         vk.method('messages.send', {'user_id': '276820555', 'message': 'ok'})
+    elif text == 'auth':
+        ex.auth('arkadiy@p33.org', 'zabylkto01')
+        vk.method('messages.send', {'user_id': '276820555', 'message': 'ok'})
     else:
         link = text.split('/')[-1]
         if link in memory:
@@ -33,6 +36,8 @@ def main(id, text):
                 ex.start()
             except ArithmeticError:
                 vk.method('messages.send', {'user_id': id, 'message': 'Invalid Link'})
+            except KeyError:
+                vk.method('messages.send', {'user_id': id, 'message': 'Не авторизован. Введи "auth"'})
             else:
                 ex.format_text()
                 list_ = []
