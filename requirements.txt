@@ -11,7 +11,7 @@ Jinja2==2.10
 lxml==4.2.1
 MarkupSafe==1.0
 MechanicalSoup==0.10.0
-requests==2.18.4
+requests==2.20.0
 six==1.11.0
 urllib3==1.22
 vk-api==10.1
