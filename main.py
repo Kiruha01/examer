@@ -1,11 +1,11 @@
-token = '6be1dc7d81306eaa2394e1b512fa2ce7b6ef4432aef65ac1523513ec6495e2b753fbf06afc305d565ce6b'
+token = 'Sample'
 
 import vk_api
 from examer import Examer
 
 vk = vk_api.vk_api.VkApi(token=token)
 
-ex = Examer('arkadiy@p33.org', 'zabylkto01')
+ex = Examer('LOGIN@p33.org', 'PASS')
 
 memory = {}
 

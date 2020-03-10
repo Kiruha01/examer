@@ -86,7 +86,7 @@ class Examer(object):
                     
 
 if __name__ == '__main__':
-    ex = Examer('arkadiy@p33.org', 'zabylkto01')
+    ex = Examer('LOGIN@p33.org', 'PASS')
     err = True
     while err:
         ex.set_link(input('Your link: '))
@@ -98,7 +98,7 @@ if __name__ == '__main__':
         else:
             err = False
     ex.format_text()
-    f = open('aaa.txt', 'w')
+    f = open('aaa.txt', 'w') # DEBUG
     for task_id in ex.list_of_task:
 
         print(task_id['question'], task_id['answer'], file=f)
