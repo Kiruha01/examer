@@ -17,6 +17,7 @@ class Examer(object):
         if login and password:
             self.auth(login, password)
         self.score = 'НЕТДАННЫХ'
+        self.time = 0
 
 
     def auth(self, login, passw):
@@ -43,7 +44,7 @@ class Examer(object):
         self.theme = tasks['test']['title'] # Тема теста
         self.id_test = str(tasks['test']['scenarioId']) # ID теста
         self.score = str(tasks['test']['score'])
-        self.time = 0
+
         
 
         for z in tasks['test']['tasks']: # Перебор в заданиях 

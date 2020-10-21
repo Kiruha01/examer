@@ -31,4 +31,7 @@ if __name__ == '__main__':
 
             print(task_id['question'], task_id['answer'], file=f)
             print('===============', file=f)
+        print('Всего баллов: ', ex.score, file=f)
+        print('Примерное время: ', round(ex.time/30), file=f)
+
         f.close()
