@@ -1,9 +1,10 @@
 from examer import Examer
+import codecs
 
 # ====== Ваши данные здесь ==============
 
-EMAIL = 'TYPE YOUR E-MAIL'
-PASSWORD = 'TYPE YOUR PASSWORD'
+EMAIL = 'oblomov@p33.org'
+PASSWORD = 'oblomov01'
 
 # =======================================
 
@@ -26,7 +27,7 @@ if __name__ == '__main__':
             else:
                 err = False
         ex.format_text()
-        f = open('answers.txt', 'w')
+        f = codecs.open('answers.txt', 'w', 'utf_8_sig')
         for task_id in ex.list_of_task:
 
             print(task_id['question'], task_id['answer'], file=f)
