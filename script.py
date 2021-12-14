@@ -3,8 +3,8 @@ import codecs
 
 # ====== Ваши данные здесь ==============
 
-EMAIL = 'oblomov@p33.org'
-PASSWORD = 'oblomov01'
+EMAIL = ''
+PASSWORD = ''
 
 # =======================================
 
