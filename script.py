@@ -3,8 +3,8 @@ import codecs
 
 # ====== Ваши данные здесь ==============
 
-EMAIL = ''
-PASSWORD = ''
+EMAIL = 'TYPE YOUR E-MAIL'
+PASSWORD = 'TYPE YOUR PASSWORD'
 
 # =======================================
 
