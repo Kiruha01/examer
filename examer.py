@@ -72,6 +72,9 @@ class Examer(object):
                 raise SignError()
             else:
                 raise LoginError()
+        response = self.session.get(self.BASE_URL + 'api/v2/user').json()
+        if not response['profile']['is_teacher']:
+            raise TeacherError()
 
     def prepare_auth_request_params(self, email: str, password: str, token: str) -> Dict[str, str]:
         data = {
