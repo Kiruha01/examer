@@ -1,23 +1,23 @@
 from examer import Examer
+from ExamerException import GettingTestError
 import codecs
 
-# ====== Ваши данные здесь ==============
+# ======================================
 
-EMAIL = 'hawetoh999@hagendes.com'
-PASSWORD = '123456789'
+EMAIL = ''
+PASSWORD = ''
 
 # =======================================
 
 
 if __name__ == '__main__':
-    if EMAIL == 'TYPE YOUR E-MAIL' or PASSWORD == 'TYPE YOUR PASSWORD':
-        print("""!!! Вы не ввели ваш логин и пароль для входа на Экзамер.
-!!! Откройте файл 'script.py' в текстовом редакторе и измените переменные EMAIL и PASSWORD""")
-    else:
+    ex = Examer(EMAIL, PASSWORD)
 
-        ex = Examer(EMAIL, PASSWORD)
-
+    try:
         test = ex.get_test(input('Your link: '))
+    except GettingTestError:
+        print('Неверная ссылка')
+    else:
         f = codecs.open('answers.txt', 'w', 'utf_8_sig')
         print(test.theme, file=f)
         print('Всего баллов:', test.score, file=f)
@@ -29,7 +29,4 @@ if __name__ == '__main__':
             print(task.question, file=f)
             print("Ответ:", task.answer, file=f)
             print('---\n', file=f)
-
-
-
         f.close()
