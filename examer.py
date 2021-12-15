@@ -8,6 +8,16 @@ from ExamerException import *
 
 
 class Task:
+    """
+    Структура, описывающая задание
+
+    :field id: str - ID задания
+    :field question: str - текст задания
+    :field difficult: int - баллы за задание (1, 2 или 3)
+    :field avg_time: float - время на выполнение
+    :field answer: str - правильный ответ
+
+    """
     def __init__(self, task_dict: Dict[str, str]):
         self.id: str = task_dict['id']
         self.question: str = self.__remove_tags(task_dict['task_text'])
@@ -31,6 +41,14 @@ class Task:
 
 
 class ExamerTest:
+    """
+        Структура, описывабщая тест
+
+        :field theme: str - тема теста
+        :field score: str - возможное количество баллов за тест
+        :field tasks: Dist[str, Task] - словарь заданий вида ("task_id": Task)
+        :field avg_time: int - примерное время выполнения теста
+    """
     def __init__(self, test_dict: Dict):
         self.theme: str = test_dict['title']
         self.id_test: str = str(test_dict['scenarioId'])
@@ -46,11 +64,26 @@ class ExamerTest:
         self.avg_time = round(self.avg_time / 30)
 
     def get_tasks(self) -> List[Task]:
+        """
+        Получить список вопросов
+        :return: List[Task]
+        """
         return list(self.tasks.values())
 
 
 class Examer(object):
     def __init__(self, email: str, password: str):
+        """
+        Основной класс для взаимодействия с API examer.
+
+        :param email: str - email для входа в аккаунт
+        :param password: str - пароль для входа в аккаунт
+
+        :raises EmailPasswordError: неверный логин или пароль
+        :raises LoginError: неопознанная ошибка входа
+        :raises SignError: ошибка отправки запроса решистрации
+        :raises TeacherError: пользователь не является учителем
+        """
         self.BASE_URL = "https://examer.ru/"
         self.SIGN_POSTFIX = 'Ic8_31'
         self.session = requests.session()
@@ -58,6 +91,17 @@ class Examer(object):
             self.auth(email, password)
 
     def auth(self, email: str, password: str):
+        """
+        Метод входа в аккаунт
+        :param email: str
+        :param password: str
+        :return: None
+
+        :raises EmailPasswordError: неверный логин или пароль
+        :raises LoginError: неопознанная ошибка входа
+        :raises SignError: ошибка отправки запроса решистрации
+        :raises TeacherError: пользователь не является учителем
+        """
         response = self.session.get(self.BASE_URL)
         soup = BeautifulSoup(response.content, 'html.parser')
         token = soup.find(id='login-form').find('input', attrs={"name": "_token"})["value"]
@@ -76,7 +120,31 @@ class Examer(object):
         if not response['profile']['is_teacher']:
             raise TeacherError()
 
+    def get_test(self, link: str) -> ExamerTest:
+        """
+        Метод получения ответов на тест по ссылке.
+        :param link: str - ссылка на тест
+        :return: ExamerTest
+        """
+        test_id = link.split('/')[-1]
+        test = self.get_questions(test_id)
+
+        while len(test.unprocessed_tasks_id):
+            data = self.generate_test(test.id_test, test.theme)
+            for task in data['tasks']:
+                if task['id'] in test.unprocessed_tasks_id:
+                    test.tasks[task['id']].answer = task['answer']
+                    test.unprocessed_tasks_id.remove(task['id'])
+        return test
+
     def prepare_auth_request_params(self, email: str, password: str, token: str) -> Dict[str, str]:
+        """
+        Подготовка параметров для регистрации и добавление подписи.
+        :param email: str - email для входа
+        :param password: str - пароль для входа
+        :param token: str - токен с формы регистрации
+        :return: Dict[str, str]
+        """
         data = {
             '_mail': email,
             '_pass': password,
@@ -88,25 +156,24 @@ class Examer(object):
         return data
 
     def get_questions(self, link: str) -> ExamerTest:
+        """
+        Получение вопросов теста.
+        :param link: str - идентификатор теста из ссылки
+        :return: ExamerText
+        """
         tasks = self.session.get(self.BASE_URL + 'api/v2/teacher/test/student/' + link).json()
         if 'error' in tasks:
             raise GettingTestError()
         return ExamerTest(tasks['test'])
 
     def generate_test(self, test_id: str, test_theme: str) -> Dict:
+        """
+        Генерация теста из случайных вопросов по выбранной теме
+        :param test_id: str - ID предмета
+        :param test_theme: str - название темы теста
+        :return: Dict
+        """
         payload = {'sid': '3', 'scenario': '1', 'id': test_id, 'title': test_theme, 'easy': '6', 'normal': '7',
                    'hard': '7'}
         return self.session.post(url='https://teacher.examer.ru/api/v2/teacher/test',
                                  data=payload).json()
-
-    def get_test(self, link: str) -> ExamerTest:
-        test_id = link.split('/')[-1]
-        test = self.get_questions(test_id)
-
-        while len(test.unprocessed_tasks_id):
-            data = self.generate_test(test.id_test, test.theme)
-            for task in data['tasks']:
-                if task['id'] in test.unprocessed_tasks_id:
-                    test.tasks[task['id']].answer = task['answer']
-                    test.unprocessed_tasks_id.remove(task['id'])
-        return test
