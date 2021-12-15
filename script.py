@@ -3,8 +3,8 @@ import codecs
 
 # ====== Ваши данные здесь ==============
 
-EMAIL = 'TYPE YOUR E-MAIL'
-PASSWORD = 'TYPE YOUR PASSWORD'
+EMAIL = 'hawetoh999@hagendes.com'
+PASSWORD = '123456789'
 
 # =======================================
 
@@ -16,23 +16,20 @@ if __name__ == '__main__':
     else:
 
         ex = Examer(EMAIL, PASSWORD)
-        err = True
-        while err:
-            ex.set_link(input('Your link: '))
 
-            try:
-                ex.start()
-            except ArithmeticError:
-                pass
-            else:
-                err = False
-        ex.format_text()
+        test = ex.get_test(input('Your link: '))
         f = codecs.open('answers.txt', 'w', 'utf_8_sig')
-        for task_id in ex.list_of_task:
+        print(test.theme, file=f)
+        print('Всего баллов:', test.score, file=f)
+        print('Примерное время на выполнения теста:', test.avg_time, "минут", file=f)
+        print('===============\n', file=f)
 
-            print(task_id['question'], task_id['answer'], file=f)
-            print('===============', file=f)
-        print('Всего баллов: ', ex.score, file=f)
-        print('Примерное время: ', round(ex.time/30), file=f)
+        for task in test.get_tasks():
+            print("Баллов за задание:", task.difficult, file=f)
+            print(task.question, file=f)
+            print("Ответ:", task.answer, file=f)
+            print('---\n', file=f)
+
+
 
         f.close()

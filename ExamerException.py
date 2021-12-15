@@ -8,9 +8,9 @@ class EmailPasswordError(Exception):
         self.message = "Неверный email или пароль"
 
 
-class NotTeacher(Exception):
+class GettingTestError(Exception):
     def __init__(self):
-        self.message = "Пользователь не является учителем"
+        self.message = "Ошибка в получении теста"
 
 
 class SignError(Exception):
