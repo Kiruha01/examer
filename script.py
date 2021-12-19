@@ -1,38 +1,32 @@
 from examer import Examer
+from ExamerException import GettingTestError
 import codecs
 
-# ====== Ваши данные здесь ==============
+# ======================================
 
-EMAIL = 'oblomov@p33.org'
-PASSWORD = 'oblomov01'
+EMAIL = ''
+PASSWORD = ''
 
 # =======================================
 
 
 if __name__ == '__main__':
-    if EMAIL == 'TYPE YOUR E-MAIL' or PASSWORD == 'TYPE YOUR PASSWORD':
-        print("""!!! Вы не ввели ваш логин и пароль для входа на Экзамер.
-!!! Откройте файл 'script.py' в текстовом редакторе и измените переменные EMAIL и PASSWORD""")
+    ex = Examer(EMAIL, PASSWORD)
+
+    try:
+        test = ex.get_test(input('Your link: '))
+    except GettingTestError:
+        print('Неверная ссылка')
     else:
-
-        ex = Examer(EMAIL, PASSWORD)
-        err = True
-        while err:
-            ex.set_link(input('Your link: '))
-
-            try:
-                ex.start()
-            except ArithmeticError:
-                pass
-            else:
-                err = False
-        ex.format_text()
         f = codecs.open('answers.txt', 'w', 'utf_8_sig')
-        for task_id in ex.list_of_task:
+        print(test.theme, file=f)
+        print('Всего баллов:', test.score, file=f)
+        print('Примерное время на выполнения теста:', test.avg_time, "минут", file=f)
+        print('===============\n', file=f)
 
-            print(task_id['question'], task_id['answer'], file=f)
-            print('===============', file=f)
-        print('Всего баллов: ', ex.score, file=f)
-        print('Примерное время: ', round(ex.time/30), file=f)
-
+        for task in test.get_tasks():
+            print("Баллов за задание:", task.difficult, file=f)
+            print(task.question, file=f)
+            print("Ответ:", task.answer, file=f)
+            print('---\n', file=f)
         f.close()
