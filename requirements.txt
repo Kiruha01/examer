@@ -3,7 +3,6 @@ certifi
 chardet
 idna
 lxml
-MechanicalSoup
 requests
 six
 soupsieve
