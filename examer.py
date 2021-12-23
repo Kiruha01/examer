@@ -5,12 +5,10 @@ from typing import List, Dict
 import aiohttp
 from bs4 import BeautifulSoup
 import requests
-from concurrent import futures
 
 from asyncio import FIRST_EXCEPTION
 
 from ExamerException import *
-import time
 
 
 class Task:
@@ -49,7 +47,7 @@ class Task:
 
 class ExamerTest:
     """
-        Структура, описывабщая тест
+        Структура, описывающая тест
 
         :field theme: str - тема теста
         :field score: str - возможное количество баллов за тест
@@ -80,22 +78,24 @@ class ExamerTest:
 
 
 class Examer(object):
-    def __init__(self, email: str, password: str):
+    def __init__(self, email: str, password: str, is_async=True):
         """
         Основной класс для взаимодействия с API examer.
 
         :param email: str - email для входа в аккаунт
         :param password: str - пароль для входа в аккаунт
+        :param is_async: bool - использовать ли асинхронные запросы (default - True)
 
         :raises EmailPasswordError: неверный логин или пароль
         :raises LoginError: неопознанная ошибка входа
         :raises SignError: ошибка отправки запроса решистрации
         :raises TeacherError: пользователь не является учителем
         """
-        self.MAX_REQUESTS = 10
+        self.MAX_REQUESTS = 20
         self.BASE_URL = "https://examer.ru/"
         self.SIGN_POSTFIX = 'Ic8_31'
         self.session = requests.session()
+        self.is_async = is_async
         if email and password:
             self.auth(email, password)
 
@@ -129,6 +129,42 @@ class Examer(object):
         if not response['profile']['is_teacher']:
             raise TeacherError()
 
+    def insert_answers(self, test: ExamerTest, session):
+        payload = {'sid': '3', 'scenario': '1', 'id': test.id_test, 'title': test.theme,
+                   'easy': '12',
+                   'normal': '12',
+                   'hard': '12'}
+        data = session.post(url=self.BASE_URL + 'api/v2/teacher/test',
+                            data=payload).json()
+        for task in data['tasks']:
+            if task['id'] in test.unprocessed_tasks_id:
+                test.tasks[task['id']].answer = task['answer']
+                test.unprocessed_tasks_id.remove(task['id'])
+
+    async def insert_answers_async(self, test: ExamerTest, session):
+        payload = {'sid': '3', 'scenario': '1', 'id': test.id_test, 'title': test.theme,
+                   'easy': '12',
+                   'normal': '12',
+                   'hard': '12'}
+
+        async with session.post(self.BASE_URL + 'api/v2/teacher/test', data=payload) as resp:
+            data = await resp.json()
+            for task in data['tasks']:
+                if task['id'] in test.unprocessed_tasks_id:
+                    test.tasks[task['id']].answer = task['answer']
+                    test.unprocessed_tasks_id.remove(task['id'])
+            if len(test.unprocessed_tasks_id) == 0:
+                raise StopIteration
+
+    async def start_async_requests(self, test: ExamerTest):
+        async with aiohttp.ClientSession(cookies=self.session.cookies.get_dict()) as session:
+            tasks = [asyncio.create_task(self.insert_answers_async(test, session))
+                     for i in range(self.MAX_REQUESTS)]
+
+            _, pendings = await asyncio.wait(tasks, return_when=FIRST_EXCEPTION)
+            for p in pendings:
+                p.cancel()
+
     def get_test(self, link: str) -> ExamerTest:
         """
         Метод получения ответов на тест по ссылке.
@@ -138,45 +174,13 @@ class Examer(object):
         test_id = link.split('/')[-1]
         test = self.get_questions(test_id)
 
-        while len(test.unprocessed_tasks_id):
-            data = self.generate_test(test.id_test, test.theme)
-            for task in data['tasks']:
-                if task['id'] in test.unprocessed_tasks_id:
-                    test.tasks[task['id']].answer = task['answer']
-                    test.unprocessed_tasks_id.remove(task['id'])
-        return test
+        if self.is_async:
+            asyncio.run(self.start_async_requests(test))
+        else:
+            i = 0
+            while (i < self.MAX_REQUESTS) or test.unprocessed_tasks_id:
+                self.insert_answers(test, self.session)
 
-    def async_get_test(self, link: str):
-        async def gen_test(test: ExamerTest, session):
-            payload = {'sid': '3', 'scenario': '1', 'id': test.id_test, 'title': test.theme, 'easy': '12', 'normal': '12',
-                       'hard': '12'}
-
-            async with session.post('https://teacher.examer.ru/api/v2/teacher/test', data=payload) as resp:
-                data = await resp.json()
-                for task in data['tasks']:
-                    if task['id'] in test.unprocessed_tasks_id:
-                        test.tasks[task['id']].answer = task['answer']
-                        test.unprocessed_tasks_id.remove(task['id'])
-                if len(test.unprocessed_tasks_id) == 0:
-                    raise StopIteration
-
-        async def asynchronous(test: ExamerTest):
-            async with aiohttp.ClientSession(cookies=self.session.cookies.get_dict()) as session:
-                tasks = [asyncio.create_task(gen_test(test, session))
-                         for i in range(self.MAX_REQUESTS)]
-
-                _, pendings = await asyncio.wait(tasks, return_when=FIRST_EXCEPTION)
-                for p in pendings:
-                    p.cancel()
-
-
-        test_id = link.split('/')[-1]
-        test = self.get_questions(test_id)
-
-        i = 0
-        while len(test.unprocessed_tasks_id):
-            print('new')
-            asyncio.run(asynchronous(test))
         return test
 
     def prepare_auth_request_params(self, email: str, password: str, token: str) -> Dict[str, str]:
@@ -207,26 +211,3 @@ class Examer(object):
         if 'error' in tasks:
             raise GettingTestError()
         return ExamerTest(tasks['test'])
-
-    def generate_test(self, test_id: str, test_theme: str) -> Dict:
-        """
-        Генерация теста из случайных вопросов по выбранной теме
-        :param test_id: str - ID предмета
-        :param test_theme: str - название темы теста
-        :return: Dict
-        """
-        payload = {'sid': '3', 'scenario': '1', 'id': test_id, 'title': test_theme, 'easy': '12', 'normal': '12',
-                   'hard': '12'}
-        return self.session.post(url='https://teacher.examer.ru/api/v2/teacher/test',
-                                 data=payload).json()
-
-
-if __name__ == "__main__":
-    ex = Examer('hawetoh999@hagendes.com', '123456789')
-    print("starting")
-    time_s = time.monotonic()
-    print(ex.get_test('https://t.examer.ru/f9afa'))
-    print("Sync ", time.monotonic() - time_s)
-    time_s = time.monotonic()
-    print(ex.async_get_test('https://t.examer.ru/f9afa'))
-    print("Async ", time.monotonic() - time_s)
