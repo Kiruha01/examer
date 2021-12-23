@@ -22,6 +22,8 @@ if __name__ == '__main__':
         print(test.theme, file=f)
         print('Всего баллов:', test.score, file=f)
         print('Примерное время на выполнения теста:', test.avg_time, "минут", file=f)
+        n = len(test.tasks)
+        print('Найдено ответов: {}/{}'.format(n - len(test.unprocessed_tasks_id), n), file=f)
         print('===============\n', file=f)
 
         for task in test.get_tasks():
