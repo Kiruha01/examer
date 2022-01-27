@@ -142,6 +142,7 @@ class Examer(object):
                 test.unprocessed_tasks_id.remove(task['id'])
 
     async def insert_answers_async(self, test: ExamerTest, session):
+        print("Here")
         payload = {'sid': '3', 'scenario': '1', 'id': test.id_test, 'title': test.theme,
                    'easy': '12',
                    'normal': '12',
@@ -175,7 +176,7 @@ class Examer(object):
         test = self.get_questions(test_id)
 
         if self.is_async:
-            asyncio.run(self.start_async_requests(test))
+            asyncio.get_event_loop().run_until_complete(self.start_async_requests(test))
         else:
             i = 0
             while (i < self.MAX_REQUESTS) or test.unprocessed_tasks_id:

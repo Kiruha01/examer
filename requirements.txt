@@ -7,3 +7,4 @@ requests
 six
 soupsieve
 urllib3
+aiohttp
