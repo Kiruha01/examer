@@ -57,11 +57,10 @@ test = ex.get_test(link)
 * `ExamerException.GettingTestError` - ошибка получения теста. Осноная причина - неверныая ссылка на тест
 
 #### Работа с тестом
+
 ```python
 # Тема теста
 test.theme
-# ID теста
-test.id_test
 # Возможное число баллов за тест
 test.score
 # Примерное время на выполнение теста

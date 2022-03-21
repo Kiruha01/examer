@@ -57,7 +57,9 @@ class ExamerTest:
 
     def __init__(self, test_dict: Dict):
         self.theme: str = test_dict['title']
-        self.id_test: str = str(test_dict['scenarioId'])
+        self.scenarioId: int = test_dict['scenarioId']
+        self.scenario: int = test_dict['scenario']
+        self.sid: int = test_dict['subject']['id']
         self.score: str = str(test_dict['score'])
         self.tasks: Dict[str, Task] = {}
         self.avg_time = 0
@@ -130,7 +132,7 @@ class Examer(object):
             raise TeacherError()
 
     def insert_answers(self, test: ExamerTest, session):
-        payload = {'sid': '3', 'scenario': '1', 'id': test.id_test, 'title': test.theme,
+        payload = {'sid': test.sid, 'scenario': test.scenario, 'id': test.scenarioId, 'title': test.theme,
                    'easy': '12',
                    'normal': '12',
                    'hard': '12'}
@@ -142,14 +144,14 @@ class Examer(object):
                 test.unprocessed_tasks_id.remove(task['id'])
 
     async def insert_answers_async(self, test: ExamerTest, session):
-        print("Here")
-        payload = {'sid': '3', 'scenario': '1', 'id': test.id_test, 'title': test.theme,
+        payload = {'sid': test.sid, 'scenario': test.scenario, 'id': test.scenarioId, 'title': test.theme,
                    'easy': '12',
                    'normal': '12',
                    'hard': '12'}
 
         async with session.post(self.BASE_URL + 'api/v2/teacher/test', data=payload) as resp:
             data = await resp.json()
+            # print(data)
             for task in data['tasks']:
                 if task['id'] in test.unprocessed_tasks_id:
                     test.tasks[task['id']].answer = task['answer']
